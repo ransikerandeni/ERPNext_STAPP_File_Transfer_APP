@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "Run Flask App",
+			"command": "/Users/ransikerandeni/Downloads/Student Applicant File Rename Project/.venv/bin/python",
+			"args": [
+				"app.py"
+			],
+			"group": "build",
+			"isBackground": true
+		}
+	]
+}
