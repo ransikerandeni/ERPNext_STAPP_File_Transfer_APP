@@ -25,6 +25,15 @@
         </div>
       {% endif %}
     {% endwith %}
+
+    {% if logs %}
+      <h3>Process Logs</h3>
+      <ul>
+        {% for log in logs %}
+          <li>{{ log }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 </div>
 </body>
 </html>
