@@ -45,6 +45,7 @@ def allowed_file(filename):
 
 def process_excel(excel_path, site_name):
     df = pd.read_excel(excel_path)
+    missing_files = []
     for _, row in df.iterrows():
         folder_name = str(row['Attached To Name'])
         file_url = str(row['File URL'])
@@ -53,10 +54,16 @@ def process_excel(excel_path, site_name):
         # Try both private and public paths
         private_path = os.path.join('sites', site_name, 'private', 'files', file_url)
         public_path = os.path.join('sites', site_name, 'public', 'files', file_url)
+        print(f"Checking: {private_path}")
+        print(f"Checking: {public_path}")
         if os.path.exists(private_path):
             shutil.copy(private_path, target_folder)
         elif os.path.exists(public_path):
             shutil.copy(public_path, target_folder)
+        else:
+            missing_files.append(file_url)
+    if missing_files:
+        print(f"Missing files: {missing_files}")
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
