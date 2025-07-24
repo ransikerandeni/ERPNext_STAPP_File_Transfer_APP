@@ -46,14 +46,15 @@ def allowed_file(filename):
 def process_excel(excel_path, site_name):
     df = pd.read_excel(excel_path)
     missing_files = []
+    frappe_sites_base = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../sites'))
     for _, row in df.iterrows():
         folder_name = str(row['Attached To Name'])
         file_url = str(row['File URL'])
         target_folder = os.path.join('output', folder_name)
         os.makedirs(target_folder, exist_ok=True)
         # Try both private and public paths
-        private_path = os.path.join('sites', site_name, 'private', 'files', file_url)
-        public_path = os.path.join('sites', site_name, 'public', 'files', file_url)
+        private_path = os.path.join(frappe_sites_base, site_name, 'private', 'files', file_url)
+        public_path = os.path.join(frappe_sites_base, site_name, 'public', 'files', file_url)
         print(f"Checking: {private_path}")
         print(f"Checking: {public_path}")
         if os.path.exists(private_path):
