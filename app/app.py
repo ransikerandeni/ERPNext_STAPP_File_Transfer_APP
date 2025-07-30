@@ -34,7 +34,10 @@ def index():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
             logs = process_excel(filepath, site_name)
-            flash('Files copied successfully!')
+            if any("Copied from" in log for log in logs):
+                flash('Files copied successfully!')
+            else:
+                flash('No files were copied. Check the logs for details.')
             return render_template('index.html', logs=logs)
         else:
             flash('Invalid file type. Please upload an Excel (.xlsx) file.')
@@ -48,32 +51,26 @@ def process_excel(excel_path, site_name):
     df = pd.read_excel(excel_path)
     missing_files = []
     logs = []
-    frappe_bench_base = None
-    current_dir = os.path.abspath(os.path.dirname(__file__))
-    while current_dir != '/':
-        if os.path.basename(current_dir) == 'frappe-bench':
-            frappe_bench_base = current_dir
-            break
-        current_dir = os.path.dirname(current_dir)
-    if not frappe_bench_base:
-        logs.append('Could not find frappe-bench base directory.')
-        return logs
+    # Use the known frappe-bench path
+    frappe_bench_base = '/home/erpuser/frappe-bench'
     frappe_sites_base = os.path.join(frappe_bench_base, 'sites')
     for _, row in df.iterrows():
         folder_name = str(row['Attached To Name']).strip()
         file_url = str(row['File URL']).strip()
-        target_folder = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'output', folder_name)
+        # Clean up the file_url by removing any duplicate 'files/' in the path
+        file_url = file_url.replace('files/files/', 'files/').lstrip('/')
+        target_folder = os.path.join('/home/erpuser/frappe-bench/ERPNext_STAPP_File_Transfer_APP/output', folder_name)
         os.makedirs(target_folder, exist_ok=True)
-        private_path = os.path.join(frappe_sites_base, site_name, 'private', 'files', file_url)
-        public_path = os.path.join(frappe_sites_base, site_name, 'public', 'files', file_url)
-        logs.append(f"Checking: {os.path.abspath(private_path)}")
-        logs.append(f"Checking: {os.path.abspath(public_path)}")
+        private_path = os.path.join(frappe_sites_base, site_name, 'private', file_url)
+        public_path = os.path.join(frappe_sites_base, site_name, 'public', file_url)
+        logs.append(f"Checking private path: {private_path}")
+        logs.append(f"Checking public path: {public_path}")
         if os.path.exists(private_path):
             shutil.copy(private_path, target_folder)
-            logs.append(f"Copied from private: {os.path.abspath(private_path)} to {os.path.abspath(target_folder)}")
+            logs.append(f"Copied from private: {private_path} to {target_folder}")
         elif os.path.exists(public_path):
             shutil.copy(public_path, target_folder)
-            logs.append(f"Copied from public: {os.path.abspath(public_path)} to {os.path.abspath(target_folder)}")
+            logs.append(f"Copied from public: {public_path} to {target_folder}")
         else:
             missing_files.append(file_url)
             logs.append(f"Missing file: {file_url}")
