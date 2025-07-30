@@ -51,15 +51,16 @@ def process_excel(excel_path, site_name):
     df = pd.read_excel(excel_path)
     missing_files = []
     logs = []
-    # Use the known frappe-bench path
-    frappe_bench_base = '/home/erpuser/frappe-bench'
+    # Get current username and construct the frappe-bench path
+    current_user = os.environ.get('USER') or os.getlogin()
+    frappe_bench_base = f'/home/{current_user}/frappe-bench'
     frappe_sites_base = os.path.join(frappe_bench_base, 'sites')
     for _, row in df.iterrows():
         folder_name = str(row['Attached To Name']).strip()
         file_url = str(row['File URL']).strip()
         # Clean up the file_url by removing any duplicate 'files/' in the path
         file_url = file_url.replace('files/files/', 'files/').lstrip('/')
-        target_folder = os.path.join('/home/erpuser/frappe-bench/ERPNext_STAPP_File_Transfer_APP/output', folder_name)
+        target_folder = os.path.join(f'/home/{current_user}/frappe-bench/ERPNext_STAPP_File_Transfer_APP/output', folder_name)
         os.makedirs(target_folder, exist_ok=True)
         private_path = os.path.join(frappe_sites_base, site_name, 'private', file_url)
         public_path = os.path.join(frappe_sites_base, site_name, 'public', file_url)
